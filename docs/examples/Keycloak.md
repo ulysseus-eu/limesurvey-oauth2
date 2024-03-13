@@ -10,7 +10,7 @@ The plugin configuration so far should look like this:
 | Option           | Value                                                                |
 |------------------|----------------------------------------------------------------------|
 | Client ID        | limesurvey                                                           |
-| Client Secret    | k9s7Q~klJchT7SKDKuGevSEDGqbi7oBIZL3X1                                |
+| Client Secret    | your_beloved_secret                                |
 | Authorize URL    | https://auth.ulysseus.eu/realms/master/protocol/openid-connect/auth  |
 | Scopes           | email, profile                                                       |
 | Access Token URL | https://auth.ulysseus.eu/realms/master/protocol/openid-connect/token |
