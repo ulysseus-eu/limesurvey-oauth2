@@ -10,7 +10,7 @@ _authorization code grant_ flow and supports automatic creation of new users.
 # Installation
 
 - go to [releases](https://github.com/BDSU/limesurvey-oauth2/releases) and download the latest release Zip archive
-- for LimeSurvey 5.x: upload the Zip archive in the plugin manager
+- for LimeSurvey 5.x and above : upload the Zip archive in the plugin manager
 - for LimeSurvey 3.x: extract the Zip archive and place the contents in `<limesurvey_root>/plugins/AuthOAuth2/`
 - configure the plugin in the plugin manager
 - activate the plugin in the plugin manager
@@ -42,12 +42,14 @@ select OAuth2 as authentication method manually.
 Below the _Use as default login_ checkbox a URL is shown with which the default login form can always be accessed
 to login using the internal database even when automatic redirection is enabled.
 
-You can find [a configuration example for Azure Active Directory here](docs/examples/AzureAD.md).
+You can find [a configuration example for Azure Active Directory here](docs/examples/AzureAD.md).  
+You can find [a configuration example for Keycloak here](docs/examples/Keycloak.md).
 
 # Supported LimeSurvey Versions
 
 This plugin was tested with
 
+- A recent version v6.4.3 (PHP 8.1)
 - the latest stable release v5.2.5
 - the latest LTS release v3.27.28
 
