@@ -332,13 +332,35 @@ class AuthOAuth2 extends AuthPluginBase
             if (!empty($defaultPermissions)) {
                 Permission::setPermissions($user->uid, 0, 'global', $defaultPermissions, true);
             }
-
+            /* Add auth_oauth2 permission */
+            Permission::model()->setGlobalPermission($user->uid, 'auth_oauth');
             if (method_exists(Permissiontemplates::class, 'applyToUser')) {
                 foreach ($this->get('autocreate_roles', null, null, []) as $role) {
                     Permissiontemplates::model()->applyToUser($user->uid, $role);
                 }
             }
         } else {
+            /* Check for permission */
+            if (!Permission::model()->hasGlobalPermission('auth_oauth', 'read', $user->uid)) {
+                /* Check if permission exist : if not create as true, else send error */
+                $permissionnExist = Permission::model()->findByAttributes([
+                    'entity_id' => 0,
+                    'entity' => 'global',
+                    'uid' => $user->uid,
+                    'permission' => 'auth_oauth'
+                ]);
+                if (empty($permissionnExist)) {
+                    Permission::model()->setGlobalPermission($user->uid, 'auth_oauth');
+                } else {
+                    if ($this->get('is_default')) {
+                        /* No way to connect : throw a 403 error (avoid looping) */
+                        throw new CHttpException(403, gT('Incorrect username and/or password!'));
+                    } else {
+                        $this->setAuthFailure(self::ERROR_AUTH_METHOD_INVALID);
+                        return;
+                    }
+                }
+            }
             $this->setUsername($user->users_name);
             $this->setAuthSuccess($user);
         }
