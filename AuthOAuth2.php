@@ -25,12 +25,12 @@ class AuthOAuth2 extends AuthPluginBase
         parent::__construct($manager, $id);
 
         $this->settings = [
-        'client_id' => [
-            'type' => 'string',
-                'label' => $this->gT('Client ID'),
-        ],
-        'client_secret' => [
-            'type' => 'string',
+            'client_id' => [
+                'type' => 'string',
+                    'label' => $this->gT('Client ID'),
+            ],
+            'client_secret' => [
+                'type' => 'string',
                 'label' => $this->gT('Client Secret'),
             ],
             'redirect_uri' => [
@@ -45,56 +45,56 @@ class AuthOAuth2 extends AuthPluginBase
                         'value' => $this->api->createUrl('admin/authentication/sa/login', []),
                     ]
                 ),
-        ],
-        'authorize_url' => [
-            'type' => 'string',
+            ],
+            'authorize_url' => [
+                'type' => 'string',
                 'label' => $this->gT('Authorize URL'),
-        ],
-        'scopes' => [
-            'type' => 'string',
+            ],
+            'scopes' => [
+                'type' => 'string',
                 'label' => $this->gT('Scopes'),
                 'help' => $this->gT('Comma-separated list of scopes to use for authorization.'),
-        ],
-        'scope_separator' => [
-            'type' => 'string',
-            'label' => $this->gT('Scopes separator in URL'),
-            'help' => $this->gT('Separate scopes in authorization URL.'),
-            'default' => ',',
-        ],
-        'access_token_url' => [
-            'type' => 'string',
+            ],
+            'scope_separator' => [
+                'type' => 'string',
+                'label' => $this->gT('Scopes separator in URL'),
+                'help' => $this->gT('Separate scopes in authorization URL.'),
+                'default' => ',',
+            ],
+            'access_token_url' => [
+                'type' => 'string',
                 'label' => $this->gT('Access Token URL'),
-        ],
-        'resource_owner_details_url' => [
-            'type' => 'string',
+            ],
+            'resource_owner_details_url' => [
+                'type' => 'string',
                 'label' => $this->gT('User Details URL'),
                 'help' => $this->gT('URL to load the user details from using the retrieved access token.'),
-        ],
-        'identifier_attribute' => [
-            'type' => 'select',
+            ],
+            'identifier_attribute' => [
+                'type' => 'select',
                 'label' => $this->gT('Identifier Attribute'),
                 'help' => $this->gT('Attribute of the LimeSurvey user to match against.'),
-            'options' => [
+                'options' => [
                     'username' => $this->gT('Username'),
                     'email' => $this->gT('E-Mail'),
+                ],
+                'default' => 'username',
             ],
-            'default' => 'username',
-        ],
-        'username_key' => [
-            'type' => 'string',
+            'username_key' => [
+                'type' => 'string',
                 'label' => $this->gT('Key for username in user details'),
                 'help' => $this->gT('Key for the username in the user details data. Only required if used as "Identifier Attibute" or if "Create new users" is enabled.'),
-        ],
-        'email_key' => [
-            'type' => 'string',
+            ],
+            'email_key' => [
+                'type' => 'string',
                 'label' => $this->gT('Key for e-mail in user details'),
                 'help' => $this->gT('Key for the e-mail in the user details data. Only required if used as "Identifier Attibute" or if "Create new users" is enabled.'),
-        ],
-        'display_name_key' => [
-            'type' => 'string',
-            'label' => $this->gT('Key for display name in user details'),
-            'help' => $this->gT('Key for the full name in the user details data. Only required if "Create new users" is enabled.'),
-        ],
+            ],
+            'display_name_key' => [
+                'type' => 'string',
+                'label' => $this->gT('Key for display name in user details'),
+                'help' => $this->gT('Key for the full name in the user details data. Only required if "Create new users" is enabled.'),
+            ],
             'is_default' => [
                 'type' => 'checkbox',
                 'label' => $this->gT('Use as default login'),
@@ -110,6 +110,20 @@ class AuthOAuth2 extends AuthPluginBase
                 'label' => $this->gT('Create new users'),
                 'help' => $this->gT('If enabled users that do not exist yet will be created in LimeSurvey after successfull login.'),
                 'default' => false,
+            ],
+            'introduction_text' => [
+                'type' => 'string',
+                'htmlOptions' => [
+                    'placeholder' => $this->gT('Login with Oauth2'),
+                ],
+                'label' => $this->gT('Introduction to the OAuth login button.'),
+            ],
+            'button_text' => [
+                'type' => 'string',
+                'htmlOptions' => [
+                    'placeholder' => $this->gT('Login'),
+                ],
+                'label' => $this->gT('Text on login button.'),
             ],
         ];
 
@@ -204,8 +218,24 @@ class AuthOAuth2 extends AuthPluginBase
 
     public function newLoginForm()
     {
-        // we need to add content to be added to the auth method selection
-        $this->getEvent()->getContent($this)->addContent('');
+        $oEvent = $this->getEvent();
+        $introductionText = viewHelper::purified(trim($this->get('introduction_text')));
+        if (empty($introductionText)) {
+            $introductionText = $this->gT("Login with Oauth2");
+        }
+        $buttonText = viewHelper::purified(trim($this->get('button_text')));
+        if (empty($buttonText)) {
+            $buttonText = $this->gT("Login");
+        }
+        $aData = [
+            'introductionText' => $introductionText,
+            'buttonText' => $buttonText,
+        ];
+        $authContent = $content = $this->renderPartial('admin.authentication.Oauth2LoginButton', $aData, true);
+        $allFromsContent = $oEvent->getAllContent();
+        foreach($allFromsContent as $plugin => $content) {
+            $oEvent->getContent($plugin)->addContent($authContent, 'prepend');
+        }
     }
 
     /**
@@ -214,7 +244,6 @@ class AuthOAuth2 extends AuthPluginBase
     public function beforeLogin()
     {
         $request = $this->api->getRequest();
-
         if ($error = $request->getParam('error')) {
             throw new CHttpException(401, $request->getParam('error_description', $error));
         }
@@ -279,7 +308,6 @@ class AuthOAuth2 extends AuthPluginBase
         if (empty($userIdentifier)) {
             throw new CHttpException(401, 'User identifier not found or empty');
         }
-
         $this->setUsername($userIdentifier);
         $this->setAuthPlugin();
     }
@@ -358,11 +386,6 @@ class AuthOAuth2 extends AuthPluginBase
                 'img' => 'fa fa-user-circle-o'
             ),
         ));
-    }
-    public static function getAuthMethodName()
-    {
-        // Using string literal here so it can be picked by translation bot
-        return 'Ulysseus authentication';
     }
 
     /**
