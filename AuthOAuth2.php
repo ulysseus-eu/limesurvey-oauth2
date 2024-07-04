@@ -1,6 +1,5 @@
 <?php
 
-
 require_once(__DIR__ . '/vendor/autoload.php');
 use League\OAuth2\Client\Provider\GenericProvider;
 use LimeSurvey\PluginManager\AuthPluginBase;
@@ -9,50 +8,52 @@ use LimeSurvey\PluginManager\PluginEvent;
 use LimeSurvey\PluginManager\PluginManager;
 
 
-class AuthOAuth2 extends AuthPluginBase {
+class AuthOAuth2 extends AuthPluginBase
+{
     protected const SESSION_STATE_KEY = 'oauth_auth_state';
 
     protected $storage = 'DbStorage';
-    static protected $name = 'OAuth2 Authentication';
-    static protected $description = 'Enable Single Sign-On using OAuth2';
+    protected static $name = 'OAuth2 Authentication';
+    protected static $description = 'Enable Single Sign-On using OAuth2';
 
-	protected $resourceData = [];
+    protected $resourceData = [];
 
-	protected $settings = [];
+    protected $settings = [];
 
-	public function __construct(PluginManager $manager, $id) {
-		parent::__construct($manager, $id);
+    public function __construct(PluginManager $manager, $id)
+    {
+        parent::__construct($manager, $id);
 
-		$this->settings = [
+        $this->settings = [
         'client_id' => [
             'type' => 'string',
-				'label' => $this->gT('Client ID'),
+                'label' => $this->gT('Client ID'),
         ],
         'client_secret' => [
             'type' => 'string',
-				'label' => $this->gT('Client Secret'),
-			],
-			'redirect_uri' => [
-				'type' => 'info',
-				'label' => $this->gT('Redirect URI'),
-				'content' => CHtml::tag(
-					'input',
-					[
-						'type' => 'text',
-						'class' => 'form-control',
-						'readonly' => true,
-						'value' => $this->api->createUrl('admin/authentication/sa/login', []),
-					]
-				),
+                'label' => $this->gT('Client Secret'),
+            ],
+            'redirect_uri' => [
+                'type' => 'info',
+                'label' => $this->gT('Redirect URI'),
+                'content' => CHtml::tag(
+                    'input',
+                    [
+                        'type' => 'text',
+                        'class' => 'form-control',
+                        'readonly' => true,
+                        'value' => $this->api->createUrl('admin/authentication/sa/login', []),
+                    ]
+                ),
         ],
         'authorize_url' => [
             'type' => 'string',
-				'label' => $this->gT('Authorize URL'),
+                'label' => $this->gT('Authorize URL'),
         ],
         'scopes' => [
             'type' => 'string',
-				'label' => $this->gT('Scopes'),
-				'help' => $this->gT('Comma-separated list of scopes to use for authorization.'),
+                'label' => $this->gT('Scopes'),
+                'help' => $this->gT('Comma-separated list of scopes to use for authorization.'),
         ],
         'scope_separator' => [
             'type' => 'string',
@@ -62,32 +63,32 @@ class AuthOAuth2 extends AuthPluginBase {
         ],
         'access_token_url' => [
             'type' => 'string',
-				'label' => $this->gT('Access Token URL'),
+                'label' => $this->gT('Access Token URL'),
         ],
         'resource_owner_details_url' => [
             'type' => 'string',
-				'label' => $this->gT('User Details URL'),
-				'help' => $this->gT('URL to load the user details from using the retrieved access token.'),
+                'label' => $this->gT('User Details URL'),
+                'help' => $this->gT('URL to load the user details from using the retrieved access token.'),
         ],
         'identifier_attribute' => [
             'type' => 'select',
-				'label' => $this->gT('Identifier Attribute'),
-				'help' => $this->gT('Attribute of the LimeSurvey user to match against.'),
+                'label' => $this->gT('Identifier Attribute'),
+                'help' => $this->gT('Attribute of the LimeSurvey user to match against.'),
             'options' => [
-					'username' => $this->gT('Username'),
-					'email' => $this->gT('E-Mail'),
+                    'username' => $this->gT('Username'),
+                    'email' => $this->gT('E-Mail'),
             ],
             'default' => 'username',
         ],
         'username_key' => [
             'type' => 'string',
-				'label' => $this->gT('Key for username in user details'),
-				'help' => $this->gT('Key for the username in the user details data. Only required if used as "Identifier Attibute" or if "Create new users" is enabled.'),
+                'label' => $this->gT('Key for username in user details'),
+                'help' => $this->gT('Key for the username in the user details data. Only required if used as "Identifier Attibute" or if "Create new users" is enabled.'),
         ],
         'email_key' => [
             'type' => 'string',
-				'label' => $this->gT('Key for e-mail in user details'),
-				'help' => $this->gT('Key for the e-mail in the user details data. Only required if used as "Identifier Attibute" or if "Create new users" is enabled.'),
+                'label' => $this->gT('Key for e-mail in user details'),
+                'help' => $this->gT('Key for the e-mail in the user details data. Only required if used as "Identifier Attibute" or if "Create new users" is enabled.'),
         ],
         'display_name_key' => [
             'type' => 'string',
@@ -96,47 +97,47 @@ class AuthOAuth2 extends AuthPluginBase {
         ],
             'is_default' => [
                 'type' => 'checkbox',
-				'label' => $this->gT('Use as default login'),
+                'label' => $this->gT('Use as default login'),
                 'help' => sprintf(
                     '%s<br>%s',
-					$this->gT('If enabled instead of showing the LimeSurvey login the user is redirected directly to the OAuth2 login. The default login form can always be accessed via:'),
+                    $this->gT('If enabled instead of showing the LimeSurvey login the user is redirected directly to the OAuth2 login. The default login form can always be accessed via:'),
                     htmlspecialchars($this->api->createUrl('admin/authentication/sa/login', ['authMethod' => 'Authdb']))
                 ),
                 'default' => false,
             ],
-			'autocreate_users' => [
-				'type' => 'checkbox',
-				'label' => $this->gT('Create new users'),
-				'help' => $this->gT('If enabled users that do not exist yet will be created in LimeSurvey after successfull login.'),
-				'default' => false,
-			],
-		];
+            'autocreate_users' => [
+                'type' => 'checkbox',
+                'label' => $this->gT('Create new users'),
+                'help' => $this->gT('If enabled users that do not exist yet will be created in LimeSurvey after successfull login.'),
+                'default' => false,
+            ],
+        ];
 
-		if (method_exists(Permissiontemplates::class, 'applyToUser')) {
-			$roles = [];
-			foreach (Permissiontemplates::model()->findAll() as $role) {
-				$roles[$role->ptid] = $role->name;
-			}
+        if (method_exists(Permissiontemplates::class, 'applyToUser')) {
+            $roles = [];
+            foreach (Permissiontemplates::model()->findAll() as $role) {
+                $roles[$role->ptid] = $role->name;
+            }
 
-			$this->settings['autocreate_roles'] = [
-				'type' => 'select',
-				'label' => $this->gT('Global roles for new users'),
-				'help' => $this->gT('Global user roles to be assigned to users that are automatically created.'),
-				'options' => $roles,
-				'htmlOptions' => [
-					'multiple' => true
-				],
-			];
-		}
+            $this->settings['autocreate_roles'] = [
+                'type' => 'select',
+                'label' => $this->gT('Global roles for new users'),
+                'help' => $this->gT('Global user roles to be assigned to users that are automatically created.'),
+                'options' => $roles,
+                'htmlOptions' => [
+                    'multiple' => true
+                ],
+            ];
+        }
 
         $this->settings['autocreate_permissions'] = [
             'type' => 'json',
-			'label' => $this->gT('Global permissions for new users'),
+            'label' => $this->gT('Global permissions for new users'),
             'help' => sprintf(
-				$this->gT('A JSON object describing the default permissions to be assigned to users that are automatically created. The JSON object has the following form: %s'),
+                $this->gT('A JSON object describing the default permissions to be assigned to users that are automatically created. The JSON object has the following form: %s'),
                 CHtml::tag('pre', [], "{\n\t\"surveys\": { ... },\n\t\"templates\": {\n\t\t\"create\": false,\n\t\t\"read\": false,\n\t\t\"update\": false,\n\t\t\"delete\": false,\n\t\t\"import\": false,\n\t\t\"export\": false,\n\t},\n\t\"users\": { ... },\n\t...\n}")
             ),
-            'editorOptions'=>array('mode'=>'tree'),
+            'editorOptions' => array('mode' => 'tree'),
             'default' => json_encode([
                 'users' => [
                     'create' => false,
@@ -201,7 +202,8 @@ class AuthOAuth2 extends AuthPluginBase {
         $this->subscribe('getGlobalBasePermissions');
     }
 
-   public function newLoginForm() {
+    public function newLoginForm()
+    {
         // we need to add content to be added to the auth method selection
         $this->getEvent()->getContent($this)->addContent('');
     }
@@ -209,7 +211,8 @@ class AuthOAuth2 extends AuthPluginBase {
     /**
      * @throws CHttpException
      */
-    public function beforeLogin() {
+    public function beforeLogin()
+    {
         $request = $this->api->getRequest();
 
         if ($error = $request->getParam('error')) {
@@ -225,8 +228,11 @@ class AuthOAuth2 extends AuthPluginBase {
             'urlResourceOwnerDetails' => $this->get('resource_owner_details_url'),
             'scopeSeparator' => $this->get('scope_separator'),
             'scopes' => array_map(
-                function($scope){ return trim($scope);},
-                explode(',', $this->get('scopes', null, null, ''))),
+                function ($scope) {
+                    return trim($scope);
+                },
+                explode(',', $this->get('scopes', null, null, ''))
+            ),
         ]);
 
         $code = $request->getParam('code');
@@ -239,13 +245,13 @@ class AuthOAuth2 extends AuthPluginBase {
             $authorizationUrl = $provider->getAuthorizationUrl();
             Yii::app()->session->add(self::SESSION_STATE_KEY, $provider->getState());
 
-			$request->redirect($authorizationUrl);
+            $request->redirect($authorizationUrl);
         }
 
         $state = $request->getParam('state');
         $safedState = Yii::app()->session->get(self::SESSION_STATE_KEY);
         if ($state !== $safedState) {
-			throw new CHttpException(401, $this->gT('Invalid state in OAuth response'));
+            throw new CHttpException(401, $this->gT('Invalid state in OAuth response'));
         }
 
         Yii::app()->session->remove(self::SESSION_STATE_KEY);
@@ -253,14 +259,14 @@ class AuthOAuth2 extends AuthPluginBase {
         try {
             $accessToken = $provider->getAccessToken('authorization_code', ['code' => $code]);
         } catch (Throwable $exception) {
-			throw new CHttpException(401, $this->gT('Failed to retrieve access token'));
+            throw new CHttpException(401, $this->gT('Failed to retrieve access token'));
         }
 
         try {
             $resourceOwner = $provider->getResourceOwner($accessToken);
             $this->resourceData = $resourceOwner->toArray();
         } catch (Throwable $exception) {
-			throw new CHttpException(401, $this->gT('Failed to retrieve user details'));
+            throw new CHttpException(401, $this->gT('Failed to retrieve user details'));
         }
 
         if ($this->get('identifier_attribute') === 'email') {
@@ -281,7 +287,8 @@ class AuthOAuth2 extends AuthPluginBase {
     /**
      * @throws CHttpException
      */
-    public function newUserSession() {
+    public function newUserSession()
+    {
         $userIdentifier = $this->getUserName();
         $identity = $this->getEvent()->get('identity');
         if ($identity->plugin != self::class || $identity->username !== $userIdentifier) {
@@ -298,7 +305,7 @@ class AuthOAuth2 extends AuthPluginBase {
             // we don't use setAuthFailure() here because if we are the active auth
             // the error is never shown to the user but instead the user is redirected
             // again, possibly resulting in a redirect loop
-			throw new CHttpException(401, $this->gT('User not found in LimeSurvey'));
+            throw new CHttpException(401, $this->gT('User not found in LimeSurvey'));
         }
 
         if (!$user) {
@@ -318,21 +325,42 @@ class AuthOAuth2 extends AuthPluginBase {
             $user->email = $email;
 
             if (!$user->save()) {
-				throw new CHttpException(401, $this->gT('Failed to create new user'));
+                throw new CHttpException(401, $this->gT('Failed to create new user'));
             }
 
             $defaultPermissions = json_decode($this->get('autocreate_permissions', null, null, []), true);
             if (!empty($defaultPermissions)) {
                 Permission::setPermissions($user->uid, 0, 'global', $defaultPermissions, true);
             }
-
+            /* Add auth_oauth2 permission */
+            Permission::model()->setGlobalPermission($user->uid, 'auth_oauth');
             if (method_exists(Permissiontemplates::class, 'applyToUser')) {
                 foreach ($this->get('autocreate_roles', null, null, []) as $role) {
                     Permissiontemplates::model()->applyToUser($user->uid, $role);
                 }
             }
-        }
-        else{
+        } else {
+            /* Check for permission */
+            if (!Permission::model()->hasGlobalPermission('auth_oauth', 'read', $user->uid)) {
+                /* Check if permission exist : if not create as true, else send error */
+                $permissionnExist = Permission::model()->findByAttributes([
+                    'entity_id' => 0,
+                    'entity' => 'global',
+                    'uid' => $user->uid,
+                    'permission' => 'auth_oauth'
+                ]);
+                if (empty($permissionnExist)) {
+                    Permission::model()->setGlobalPermission($user->uid, 'auth_oauth');
+                } else {
+                    if ($this->get('is_default')) {
+                        /* No way to connect : throw a 403 error (avoid looping) */
+                        throw new CHttpException(403, gT('Incorrect username and/or password!'));
+                    } else {
+                        $this->setAuthFailure(self::ERROR_AUTH_METHOD_INVALID);
+                        return;
+                    }
+                }
+            }
             $this->setUsername($user->users_name);
             $this->setAuthSuccess($user);
         }
@@ -364,13 +392,13 @@ class AuthOAuth2 extends AuthPluginBase {
      * @param string $iSeparator
      * @return string
      */
-    public function getTemplatedKey(string $iKey, string $iSeparator='.'): string
+    public function getTemplatedKey(string $iKey, string $iSeparator = '.'): string
     {
         $rValue = '';
         if (str_contains($iKey, '.') || str_contains($iKey, '+')) {
             $newUsernameKey = '';
             $sub_values = array_map(
-                function($sub_key) {
+                function ($sub_key) {
                     $sub_key_modified = $sub_key;
                     $value = '';
                     if (str_contains($sub_key, '.')) {
@@ -379,33 +407,29 @@ class AuthOAuth2 extends AuthPluginBase {
                         $value = $this->getFromResourceData($sub_key_modified);
                         $modifier = $sub_key_as_table[1];
                         if ($modifier === 'first_letter') {
-                            $value = join('',array_map(
-                                function($spaceSeparatedElements){
+                            $value = join('', array_map(
+                                function ($spaceSeparatedElements) {
                                     return strtolower($spaceSeparatedElements[0]);
                                 },
-                                explode(' ',$value))
-                            );
-                        }
-                        elseif ($modifier === 'capitalize'){
+                                explode(' ', $value)
+                            ));
+                        } elseif ($modifier === 'capitalize') {
                             $value = ucfirst(strtolower($value));
-                        }
-                        elseif ($modifier === 'upper_case'){
+                        } elseif ($modifier === 'upper_case') {
                             $value = strtoupper($value);
-                        }
-                        elseif ($modifier === 'lower_case'){
+                        } elseif ($modifier === 'lower_case') {
                             $value = strtolower($value);
                         }
-                    }
-                    else{
+                    } else {
                         $sub_key_modified = $this->getFromResourceData($sub_key_modified);
                     }
                     return $value;
                 },
-                explode("+", $iKey));
+                explode("+", $iKey)
+            );
 
-            $rValue = join($iSeparator,$sub_values);
-        }
-        else{
+            $rValue = join($iSeparator, $sub_values);
+        } else {
             $rValue = $this->getFromResourceData($iKey);
         }
         return $rValue;
@@ -426,4 +450,3 @@ class AuthOAuth2 extends AuthPluginBase {
         return $value;
     }
 }
-
