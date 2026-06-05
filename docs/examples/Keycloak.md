@@ -12,9 +12,8 @@ The plugin configuration so far should look like this:
 | Client ID        | limesurvey                                                           |
 | Client Secret    | your_beloved_secret                                                  |
 | Authorize URL    | https://auth.ulysseus.eu/realms/master/protocol/openid-connect/auth  |
-| Scopes           | email, profile                                                       |
+| Scopes           | email,profile,openid                                                 |
 | Separator        | space_character for Keycloak                                         |
-| Access Token URL | https://auth.ulysseus.eu/realms/master/protocol/openid-connect/token |
 | Access Token URL | https://auth.ulysseus.eu/realms/master/protocol/openid-connect/token |
 
 ## Configure User Details

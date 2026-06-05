@@ -1,6 +1,5 @@
 <?php
 
-
 require_once(__DIR__ . '/vendor/autoload.php');
 use League\OAuth2\Client\Provider\GenericProvider;
 use LimeSurvey\PluginManager\AuthPluginBase;
@@ -112,21 +111,34 @@ class AuthOAuth2 extends AuthPluginBase {
 			],
 		];
 
-		if (method_exists(Permissiontemplates::class, 'applyToUser')) {
-			$roles = [];
-			foreach (Permissiontemplates::model()->findAll() as $role) {
-				$roles[$role->ptid] = $role->name;
-			}
+		if (class_exists('Permissiontemplates') && method_exists(Permissiontemplates::class, 'applyToUser')) {
+            try {
+                if (Yii::app() && Yii::app()->hasComponent('db')) {
+                    $roles = [];
+                    foreach (Permissiontemplates::model()->findAll() as $role) {
+                        $roles[$role->ptid] = $role->name;
+                    }
 
-			$this->settings['autocreate_roles'] = [
-				'type' => 'select',
-				'label' => $this->gT('Global roles for new users'),
-				'help' => $this->gT('Global user roles to be assigned to users that are automatically created.'),
-				'options' => $roles,
-				'htmlOptions' => [
-					'multiple' => true
-				],
-			];
+                    $this->settings['autocreate_roles'] = [
+                        'type' => 'select',
+                        'label' => $this->gT('Global roles for new users'),
+                        'help' => $this->gT('Global user roles to be assigned to users that are automatically created.'),
+                        'options' => $roles,
+                        'htmlOptions' => [
+                            'multiple' => true
+                        ],
+                    ];
+                }
+            } catch (Throwable $e) {
+                // Log the error natively through Yii
+                if (class_exists('Yii') && Yii::app() && Yii::getLogger()) {
+                    Yii::log(
+                        'Ulysseus OAuth Plugin DB Error: ' . $e->getMessage(),
+                        CLogger::LEVEL_ERROR, // Log level
+                        'plugin.AuthOAuth2'   // Custom category so you can search for it easily
+                    );
+                }
+            }
 		}
 
         $this->settings['autocreate_permissions'] = [
@@ -427,3 +439,4 @@ class AuthOAuth2 extends AuthPluginBase {
     }
 }
 
+?>
