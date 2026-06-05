@@ -9,21 +9,19 @@ _authorization code grant_ flow and supports automatic creation of new users.
 
 # Installation
 
-- go to [releases](https://github.com/BDSU/limesurvey-oauth2/releases) and download the latest release Zip archive
-- alternatively you can zip from sources:
+- build and zip from sources:
 ````bash
-cd ..
 # for the plugin to install, the directory shall have the sames name as the php file
-mv limesurvey-oauth2 AuthOAuth2
-zip -r AuthOAuth2.zip AuthOAuth2
+composer install --no-dev --optimize-autoloader --prefer-dist && \
+cd .. && \
+mv limesurvey-oauth2 AuthOAuth2 && \
+zip -r AuthOAuth2.zip AuthOAuth2 && \
+mv AuthOAuth2 limesurvey-oauth2
 ````
 - for LimeSurvey 5.x and above : upload the Zip archive in the plugin manager
 - for LimeSurvey 3.x: extract the Zip archive and place the contents in `<limesurvey_root>/plugins/AuthOAuth2/`
 - configure the plugin in the plugin manager
 - activate the plugin in the plugin manager
-
-To test the latest development version `git clone` [this repository](https://github.com/BDSU/limesurvey-oauth2)
-into `<limesurvey_root>/plugins/AuthOAuth2/` and run `composer install` in it to download all dependencies.
 
 # Configuration
 
