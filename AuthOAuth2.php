@@ -1,7 +1,5 @@
 <?php
 
-/* @version 1.4.4 */
-
 require_once(__DIR__ . '/vendor/autoload.php');
 use League\OAuth2\Client\Provider\GenericProvider;
 use LimeSurvey\PluginManager\AuthPluginBase;
