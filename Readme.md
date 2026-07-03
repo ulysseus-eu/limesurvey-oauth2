@@ -9,7 +9,7 @@ _authorization code grant_ flow and supports automatic creation of new users.
 
 # Installation
 
-- go to [releases](https://github.com/BDSU/limesurvey-oauth2/releases) and download the latest release Zip archive
+- go to [releases](https://github.com/ulysseus-eu/limesurvey-oauth2/releases) and download the latest release Zip archive
 - alternatively you can zip from sources:
 ````bash
 cd ..
@@ -22,12 +22,19 @@ zip -r AuthOAuth2.zip AuthOAuth2
 - configure the plugin in the plugin manager
 - activate the plugin in the plugin manager
 
-To test the latest development version `git clone` [this repository](https://github.com/BDSU/limesurvey-oauth2)
+For the current version `git clone` [this repository](https://github.com/ulysseus-eu/limesurvey-oauth2)
 into `<limesurvey_root>/plugins/AuthOAuth2/` and run `composer install` in it to download all dependencies.
+
+```
+cd ./plugins/
+git clone https://github.com/SondagesPro/limesurvey-oauth2.git AuthOAuth2
+cd AuthOAuth2
+composer install
+```
 
 # Configuration
 
-Before activating the plugin open its configuration from the plugin manager.
+Before activating the plugin open its configuration from the plugin manager or create your own configuration in `application/config/config.php` file
 
 With your identity provider create a new app for LimeSurvey and paste the _Redirect URI_ shown in the
 LimeSurvey configuration there. Fill in the _Client ID_, _Client Secret_, _Authorize URL_, _Scopes_ and
@@ -49,8 +56,39 @@ select OAuth2 as authentication method manually.
 Below the _Use as default login_ checkbox a URL is shown with which the default login form can always be accessed
 to login using the internal database even when automatic redirection is enabled.
 
+With _Key for roles in user detail_ you can get the roles at creation on a specific attribute. This attribute can be an array for multiple roles.
+
 You can find [a configuration example for Azure Active Directory here](docs/examples/AzureAD.md).  
 You can find [a configuration example for Keycloak here](docs/examples/Keycloak.md).
+
+## Default of fixed configuration
+
+You can set default configuration by array in config part of LimeSurvey config file.
+
+The config are set at `AuthOAuth2Settings` key with array of settings by name. For fixed config part you use an array with settings name in `fixed` array. If you want to hide some element from gui, you can use `hidden` array.
+
+For example :
+```
+		// Update default LimeSurvey config here
+		'AuthOAuth2Settings' => [
+			'fixed' => [
+				'client_id' => 'MyOAuth2-clientID',
+				'client_secret' => 'MyOAuth2-secret',
+				'authorize_url' => 'https://accounts.example.com/auth',
+				'access_token_url' => 'https://oauth2.example.com/token',
+				'resource_owner_details_url' => 'https://accounts.example.com/userdetails',
+				'is_default' => true,
+			],
+			'hidden' => ['client_id','client_secret'],
+			'scopes' => 'profile,email',
+			'scope_separator' => ',',
+			'identifier_attribute' => 'username',
+			'username_key' => 'dn',
+			'email_key' => 'email',
+			'display_name_key' => 'givenName',
+		],
+```
+
 
 # Supported LimeSurvey Versions
 
@@ -63,4 +101,4 @@ This plugin was tested with
 and should work with all version 3.x or newer.
 Configuring user roles for new users is only supported starting with LimeSurvey 4.x.
 
-The minimum required PHP version is 5.6.
+The minimum required PHP version is 8.1.
