@@ -200,71 +200,84 @@ class AuthOAuth2 extends AuthPluginBase
             ],
         ];
 
-        if (method_exists(Permissiontemplates::class, 'applyToUser')) {
-            $roles = [];
-            foreach (Permissiontemplates::model()->findAll() as $role) {
-                $roles[$role->ptid] = $role->name;
-            }
+		if (class_exists('Permissiontemplates') && method_exists(Permissiontemplates::class, 'applyToUser')) {
+            try {
+                if (Yii::app() && Yii::app()->hasComponent('db')) {
+                    $roles = [];
+                    foreach (Permissiontemplates::model()->findAll() as $role) {
+                        $roles[$role->ptid] = $role->name;
+                    }
 
-            $this->settings['autocreate_roles'] = [
-                'type' => 'select',
-                'label' => $this->gT('Global roles for new users'),
-                'help' => $this->gT('Global user roles to be assigned to users that are automatically created.'),
-                'options' => $roles,
-                'htmlOptions' => [
-                    'multiple' => true,
-                    'disabled' => in_array('autocreate_roles', $fixedPluginSettings)
-                ],
-                'default' => $this->getGlobalSetting('autocreate_roles', ''),
-                'selectOptions' => [
-                    'disabled' => in_array('autocreate_roles', $fixedPluginSettings)
-                ]
-            ];
-            $this->settings['roles_key'] = [
-                'type' => 'string',
-                'label' => $this->gT('Key for roles in user detail'),
-                'help' => $this->gT('Key to get the user roles. Must be an array, if roles exist : it was assigned to the user when it was created.'),
-                'default' => $this->getGlobalSetting('roles_key', ''),
-                'htmlOptions' => [
-                    'readonly' => in_array('roles_key', $fixedPluginSettings)
-                ]
-            ];
-            $this->settings['roles_update'] = [
-                'type' => 'checkbox',
-                'label' => $this->gT('Update roles at each log in'),
-                'help' => $this->gT('Check and update roles each time an user log in.'),
-                'default' => $this->getGlobalSetting('roles_update', ''),
-                'htmlOptions' => [
-                    'disabled' => in_array('roles_update', $fixedPluginSettings)
-                ]
-            ];
-            $this->settings['roles_needed'] = [
-                'type' => 'string',
-                'label' => $this->gT('Need a minimum one role to allow log in or create user.'),
-                'help' => $this->gT('If user didn\'t have any roles : disallow log in. Roles name are not checked with existing role.'),
-                'default' => $this->getGlobalSetting('roles_needed', ''),
-                'htmlOptions' => [
-                    'disabled' => in_array('roles_needed', $fixedPluginSettings)
-                ]
-            ];
-            $this->settings['roles_removetext'] = [
-                'type' => 'string',
-                'label' => $this->gT('Allow you to remove specific string on the roles returnned'),
-                'help' => $this->gT('This string was removed to the roles returned before comparaison.'),
-                'default' => $this->getGlobalSetting('roles_removetext', ''),
-                'htmlOptions' => [
-                    'readonly' => in_array('roles_removetext', $fixedPluginSettings)
-                ]
-            ];
-            $this->settings['roles_insensitive'] = [
-                'type' => 'checkbox',
-                'label' => $this->gT('Insensitive comparaison for roles'),
-                'help' => $this->gT('Do an insensitive comparaison before search the roles.'),
-                'default' => $this->getGlobalSetting('roles_insensitive', ''),
-                'htmlOptions' => [
-                    'disabled' => in_array('roles_insensitive', $fixedPluginSettings)
-                ]
-            ];
+                    $this->settings['autocreate_roles'] = [
+                        'type' => 'select',
+                        'label' => $this->gT('Global roles for new users'),
+                        'help' => $this->gT('Global user roles to be assigned to users that are automatically created.'),
+                        'options' => $roles,
+                        'htmlOptions' => [
+                            'multiple' => true,
+                            'disabled' => in_array('autocreate_roles', $fixedPluginSettings)
+                        ],
+                        'default' => $this->getGlobalSetting('autocreate_roles', ''),
+                        'selectOptions' => [
+                            'disabled' => in_array('autocreate_roles', $fixedPluginSettings)
+                        ]
+                    ];
+                    $this->settings['roles_key'] = [
+                        'type' => 'string',
+                        'label' => $this->gT('Key for roles in user detail'),
+                        'help' => $this->gT('Key to get the user roles. Must be an array, if roles exist : it was assigned to the user when it was created.'),
+                        'default' => $this->getGlobalSetting('roles_key', ''),
+                        'htmlOptions' => [
+                            'readonly' => in_array('roles_key', $fixedPluginSettings)
+                        ]
+                    ];
+                    $this->settings['roles_update'] = [
+                        'type' => 'checkbox',
+                        'label' => $this->gT('Update roles at each log in'),
+                        'help' => $this->gT('Check and update roles each time an user log in.'),
+                        'default' => $this->getGlobalSetting('roles_update', ''),
+                        'htmlOptions' => [
+                            'disabled' => in_array('roles_update', $fixedPluginSettings)
+                        ]
+                    ];
+                    $this->settings['roles_needed'] = [
+                        'type' => 'string',
+                        'label' => $this->gT('Need a minimum one role to allow log in or create user.'),
+                        'help' => $this->gT('If user didn\'t have any roles : disallow log in. Roles name are not checked with existing role.'),
+                        'default' => $this->getGlobalSetting('roles_needed', ''),
+                        'htmlOptions' => [
+                            'disabled' => in_array('roles_needed', $fixedPluginSettings)
+                        ]
+                    ];
+                    $this->settings['roles_removetext'] = [
+                        'type' => 'string',
+                        'label' => $this->gT('Allow you to remove specific string on the roles returnned'),
+                        'help' => $this->gT('This string was removed to the roles returned before comparaison.'),
+                        'default' => $this->getGlobalSetting('roles_removetext', ''),
+                        'htmlOptions' => [
+                            'readonly' => in_array('roles_removetext', $fixedPluginSettings)
+                        ]
+                    ];
+                    $this->settings['roles_insensitive'] = [
+                        'type' => 'checkbox',
+                        'label' => $this->gT('Insensitive comparaison for roles'),
+                        'help' => $this->gT('Do an insensitive comparaison before search the roles.'),
+                        'default' => $this->getGlobalSetting('roles_insensitive', ''),
+                        'htmlOptions' => [
+                            'disabled' => in_array('roles_insensitive', $fixedPluginSettings)
+                        ]
+                    ];
+                }
+            } catch (Throwable $e) {
+                // Log the error natively through Yii
+                if (class_exists('Yii') && Yii::app() && Yii::getLogger()) {
+                    Yii::log(
+                        'Ulysseus OAuth Plugin DB Error: ' . $e->getMessage(),
+                        CLogger::LEVEL_ERROR, // Log level
+                        'plugin.AuthOAuth2'   // Custom category so you can search for it easily
+                    );
+                }
+            }
         }
 
         $this->settings['autocreate_permissions'] = [
