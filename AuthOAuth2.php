@@ -260,7 +260,12 @@ class AuthOAuth2 extends AuthPluginBase {
             $resourceOwner = $provider->getResourceOwner($accessToken);
             $this->resourceData = $resourceOwner->toArray();
         } catch (Throwable $exception) {
-			throw new CHttpException(401, $this->gT('Failed to retrieve user details'));
+            Yii::log(
+                    'Auth failed: ' . $exception->getMessage() . "\n" . $exception->getTraceAsString(),
+                    CLogger::LEVEL_ERROR,
+                    'system.oauth'
+                );
+            throw new CHttpException(401, $this->gT('Failed to retrieve user details'));
         }
 
         if ($this->get('identifier_attribute') === 'email') {
